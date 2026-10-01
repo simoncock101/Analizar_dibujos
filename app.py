@@ -7,7 +7,7 @@ from streamlit_drawable_canvas import st_canvas
 
 
 # =========================================================
-# CONFIGURACION
+# CONFIGURACIÓN
 # =========================================================
 
 st.set_page_config(
@@ -78,6 +78,22 @@ st.markdown("""
     margin-top: 25px;
     color: #202124;
     border: 1px solid #e0e0e0;
+}
+
+.exito {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.error-clave {
+    background-color: #ffebee;
+    color: #b71c1c;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 10px;
 }
 
 </style>
@@ -205,11 +221,68 @@ with col2:
         unsafe_allow_html=True
     )
 
+    # -----------------------------------------------------
+    # API KEY
+    # -----------------------------------------------------
+
     api_key = st.text_input(
         "API Key",
         type="password",
         placeholder="sk-..."
     )
+
+    # -----------------------------------------------------
+    # BOTÓN VALIDAR
+    # -----------------------------------------------------
+
+    validar = st.button(
+        "✓ Validar clave"
+    )
+
+    if validar:
+
+        if not api_key.strip():
+
+            st.error(
+                "Primero ingresa una API Key."
+            )
+
+            st.session_state["clave_valida"] = False
+
+        else:
+
+            try:
+
+                # Crear cliente con la clave ingresada
+                cliente_validacion = OpenAI(
+                    api_key=api_key.strip()
+                )
+
+                # Petición sencilla para comprobar autenticación
+                cliente_validacion.models.list()
+
+                st.session_state["clave_valida"] = True
+
+                st.success(
+                    "✓ La API Key es válida."
+                )
+
+            except Exception as e:
+
+                st.session_state["clave_valida"] = False
+
+                st.error(
+                    "✗ La API Key no es válida."
+                )
+
+                st.caption(
+                    str(e)
+                )
+
+
+    # -----------------------------------------------------
+    # INFORMACIÓN
+    # -----------------------------------------------------
 
     st.markdown(
         """
@@ -234,7 +307,7 @@ with col2:
 
 
 # =========================================================
-# FUNCION BASE64
+# FUNCIÓN BASE64
 # =========================================================
 
 def encode_image_to_base64(image_path):
@@ -258,12 +331,6 @@ if analizar:
             "Primero debes ingresar tu API Key."
         )
 
-    elif canvas_result.image_data is None:
-
-        st.warning(
-            "Primero realiza un dibujo en el tablero."
-        )
-
     else:
 
         with st.spinner(
@@ -271,6 +338,15 @@ if analizar:
         ):
 
             try:
+
+                # -----------------------------------------
+                # Crear cliente
+                # -----------------------------------------
+
+                client = OpenAI(
+                    api_key=api_key.strip()
+                )
+
 
                 # -----------------------------------------
                 # Convertir canvas en imagen
@@ -302,20 +378,7 @@ if analizar:
 
 
                 # -----------------------------------------
-                # Crear cliente
-                # -----------------------------------------
-
-                client = OpenAI(
-                    api_key=api_key
-                )
-
-
-                # -----------------------------------------
-                # PROMPT
-                #
-                # IMPORTANTE:
-                # Este texto no contiene tildes ni caracteres
-                # especiales para evitar el error ASCII.
+                # Prompt
                 # -----------------------------------------
 
                 prompt = """
@@ -345,7 +408,7 @@ If the drawing is unclear, say so.
 
 
                 # -----------------------------------------
-                # SOLICITUD A OPENAI
+                # Solicitud a OpenAI
                 # -----------------------------------------
 
                 response = client.chat.completions.create(
@@ -371,7 +434,6 @@ If the drawing is unclear, say so.
                                         "url":
                                         f"data:image/png;base64,{base64_image}"
                                     }
-
                                 }
 
                             ]
@@ -386,7 +448,7 @@ If the drawing is unclear, say so.
 
 
                 # -----------------------------------------
-                # OBTENER RESPUESTA
+                # Obtener respuesta
                 # -----------------------------------------
 
                 resultado = response.choices[
@@ -395,7 +457,7 @@ If the drawing is unclear, say so.
 
 
                 # -----------------------------------------
-                # MOSTRAR RESULTADO
+                # Mostrar resultado
                 # -----------------------------------------
 
                 st.markdown(
@@ -425,7 +487,7 @@ If the drawing is unclear, say so.
 
 
 # =========================================================
-# PIE DE PAGINA
+# PIE DE PÁGINA
 # =========================================================
 
 st.divider()

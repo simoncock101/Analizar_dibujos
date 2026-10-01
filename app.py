@@ -167,26 +167,17 @@ with col1:
         unsafe_allow_html=True
     )
 
+    # Tablero de dibujo
     canvas_result = st_canvas(
-
         fill_color="rgba(255, 255, 255, 0)",
-
         stroke_width=stroke_width,
-
         stroke_color=stroke_color,
-
         background_color="#FFFFFF",
-
-        height=320,
-
-        width=520,
-
+        height=350,
+        width=650,
         drawing_mode="freedraw",
-
-        display_toolbar=True,
-
+        display_toolbar=False,
         key="canvas_boceto"
-
     )
 
     st.write("")
@@ -221,10 +212,7 @@ with col2:
         placeholder="sk-..."
     )
 
-    # -----------------------------------------------------
-    # INFORMACIÓN
-    # -----------------------------------------------------
-
+    # Información sobre la función
     st.markdown(
         """
         <div class="info">
@@ -248,7 +236,7 @@ with col2:
 
 
 # =========================================================
-# CONVERTIR IMAGEN A BASE64
+# FUNCIÓN PARA CONVERTIR IMAGEN A BASE64
 # =========================================================
 
 def encode_image_to_base64(image_path):
@@ -261,7 +249,7 @@ def encode_image_to_base64(image_path):
 
 
 # =========================================================
-# ANALIZAR
+# ANALIZAR DIBUJO
 # =========================================================
 
 if analizar:
@@ -287,7 +275,7 @@ if analizar:
             try:
 
                 # -----------------------------------------
-                # Convertir canvas en imagen
+                # Convertir el canvas en imagen
                 # -----------------------------------------
 
                 image_array = np.array(
@@ -307,7 +295,7 @@ if analizar:
 
 
                 # -----------------------------------------
-                # Base64
+                # Convertir imagen a Base64
                 # -----------------------------------------
 
                 base64_image = encode_image_to_base64(
@@ -316,13 +304,17 @@ if analizar:
 
 
                 # -----------------------------------------
-                # OpenAI
+                # Crear cliente OpenAI
                 # -----------------------------------------
 
                 client = OpenAI(
                     api_key=api_key
                 )
 
+
+                # -----------------------------------------
+                # Instrucciones para la IA
+                # -----------------------------------------
 
                 prompt = """
                 Analiza el dibujo realizado por el usuario.
@@ -351,6 +343,10 @@ if analizar:
                 """
 
 
+                # -----------------------------------------
+                # Solicitud a OpenAI
+                # -----------------------------------------
+
                 response = client.chat.completions.create(
 
                     model="gpt-4o-mini",
@@ -374,7 +370,6 @@ if analizar:
                                         "url":
                                         f"data:image/png;base64,{base64_image}"
                                     }
-
                                 }
 
                             ]
@@ -388,13 +383,17 @@ if analizar:
                 )
 
 
+                # -----------------------------------------
+                # Obtener resultado
+                # -----------------------------------------
+
                 resultado = response.choices[
                     0
                 ].message.content
 
 
                 # -----------------------------------------
-                # RESULTADO
+                # Mostrar resultado
                 # -----------------------------------------
 
                 st.markdown(
@@ -424,7 +423,7 @@ if analizar:
 
 
 # =========================================================
-# PIE
+# PIE DE PÁGINA
 # =========================================================
 
 st.divider()

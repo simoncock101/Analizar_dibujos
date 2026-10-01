@@ -1,4 +1,3 @@
-import os
 import base64
 import streamlit as st
 import numpy as np
@@ -19,135 +18,67 @@ st.set_page_config(
 
 
 # =========================================================
-# ESTILOS
+# ESTILO
 # =========================================================
 
 st.markdown("""
 <style>
 
-    /* ================================================
-       FONDO PRINCIPAL
-       ================================================ */
+.stApp {
+    background-color: #ffffff;
+}
 
-    .stApp {
-        background-color: #ffffff;
-    }
+.titulo {
+    font-size: 40px;
+    font-weight: 700;
+    color: #202124;
+}
 
+.subtitulo {
+    font-size: 17px;
+    color: #6b7280;
+    margin-bottom: 30px;
+}
 
-    /* ================================================
-       TEXTOS PRINCIPALES
-       ================================================ */
+.seccion {
+    font-size: 22px;
+    font-weight: 700;
+    color: #202124;
+}
 
-    .titulo {
-        font-size: 40px;
-        font-weight: 700;
-        color: #202124 !important;
-        margin-bottom: 0px;
-    }
+.descripcion {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
 
-    .subtitulo {
-        font-size: 17px;
-        color: #5f6368 !important;
-        margin-top: 5px;
-        margin-bottom: 30px;
-    }
+.info {
+    background-color: #f1f3f4;
+    border-radius: 12px;
+    padding: 20px;
+    color: #202124;
+    margin-top: 15px;
+    border: 1px solid #e0e0e0;
+}
 
-    .seccion {
-        font-size: 22px;
-        font-weight: 700;
-        color: #202124 !important;
-        margin-bottom: 5px;
-    }
+.info h4 {
+    color: #202124;
+    margin-top: 0;
+}
 
-    .descripcion {
-        font-size: 14px;
-        color: #5f6368 !important;
-        margin-bottom: 12px;
-    }
+.info p {
+    color: #4b5563;
+    margin: 8px 0;
+}
 
-
-    /* ================================================
-       PANEL DE INFORMACIÓN DE LA IA
-       ================================================ */
-
-    .panel-ia {
-        background-color: #f3f4f6;
-        border: 1px solid #e1e4e8;
-        border-radius: 14px;
-        padding: 22px;
-        margin-top: 10px;
-    }
-
-    .panel-ia-titulo {
-        font-size: 16px;
-        font-weight: 700;
-        color: #202124 !important;
-        margin-bottom: 15px;
-    }
-
-    .panel-ia-texto {
-        font-size: 14px;
-        color: #4b5563 !important;
-        line-height: 1.7;
-    }
-
-
-    /* ================================================
-       CANVAS
-       ================================================ */
-
-    div[data-testid="stCustomComponentV1"] {
-        background-color: #ffffff !important;
-        border-radius: 10px !important;
-        overflow: hidden !important;
-    }
-
-
-    /* ================================================
-       BOTÓN
-       ================================================ */
-
-    .stButton > button {
-        border-radius: 10px;
-        height: 45px;
-        font-size: 15px;
-        font-weight: 600;
-    }
-
-
-    /* ================================================
-       RESULTADO
-       ================================================ */
-
-    .resultado {
-        background-color: #f3f4f6;
-        border: 1px solid #e1e4e8;
-        border-radius: 14px;
-        padding: 25px;
-        margin-top: 25px;
-        color: #202124 !important;
-    }
-
-
-    /* ================================================
-       TEXTOS DE STREAMLIT
-       ================================================ */
-
-    .stMarkdown,
-    .stText,
-    p,
-    label {
-        color: #202124;
-    }
-
-
-    /* ================================================
-       INPUT DE API
-       ================================================ */
-
-    div[data-baseweb="input"] {
-        background-color: #ffffff !important;
-    }
+.resultado {
+    background-color: #f1f3f4;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 25px;
+    color: #202124;
+    border: 1px solid #e0e0e0;
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -171,7 +102,7 @@ st.markdown(
 
 
 # =========================================================
-# BARRA LATERAL
+# SIDEBAR
 # =========================================================
 
 with st.sidebar:
@@ -186,9 +117,9 @@ with st.sidebar:
 
     stroke_width = st.slider(
         "Tamaño del pincel",
-        min_value=1,
-        max_value=20,
-        value=5
+        1,
+        20,
+        5
     )
 
     stroke_color = st.color_picker(
@@ -213,13 +144,13 @@ with st.sidebar:
 # =========================================================
 
 col1, col2 = st.columns(
-    [1.15, 0.85],
+    [1.1, 0.9],
     gap="large"
 )
 
 
 # =========================================================
-# COLUMNA IZQUIERDA
+# TABLERO
 # =========================================================
 
 with col1:
@@ -236,11 +167,6 @@ with col1:
         unsafe_allow_html=True
     )
 
-
-    # -----------------------------------------------------
-    # CANVAS
-    # -----------------------------------------------------
-
     canvas_result = st_canvas(
 
         fill_color="rgba(255, 255, 255, 0)",
@@ -251,27 +177,19 @@ with col1:
 
         background_color="#FFFFFF",
 
-        # IMPORTANTE:
-        # Este tamaño ahora cabe dentro de la columna.
-        height=350,
+        height=320,
 
-        width=560,
+        width=520,
 
         drawing_mode="freedraw",
 
         display_toolbar=True,
 
-        key="boceto_canvas"
+        key="canvas_boceto"
 
     )
 
-
     st.write("")
-
-
-    # -----------------------------------------------------
-    # BOTÓN
-    # -----------------------------------------------------
 
     analizar = st.button(
         "🔍 Interpretar boceto",
@@ -280,7 +198,7 @@ with col1:
 
 
 # =========================================================
-# COLUMNA DERECHA
+# PANEL DERECHO
 # =========================================================
 
 with col2:
@@ -297,46 +215,31 @@ with col2:
         unsafe_allow_html=True
     )
 
-
-    # -----------------------------------------------------
-    # API KEY
-    # -----------------------------------------------------
-
     api_key = st.text_input(
         "API Key",
         type="password",
         placeholder="sk-..."
     )
 
-
-    st.write("")
-
-
     # -----------------------------------------------------
-    # TARJETA INFORMATIVA
+    # INFORMACIÓN
     # -----------------------------------------------------
 
     st.markdown(
         """
-        <div class="panel-ia">
+        <div class="info">
 
-            <div class="panel-ia-titulo">
-                ¿Qué hará la inteligencia artificial?
-            </div>
+        <h4>¿Qué hará la inteligencia artificial?</h4>
 
-            <div class="panel-ia-texto">
+        <p>Identificará el objeto que dibujaste.</p>
 
-                Identificará el objeto que dibujaste.<br><br>
+        <p>Indicará qué tan segura es su interpretación.</p>
 
-                Indicará qué tan segura es su interpretación.<br><br>
+        <p>Describirá los elementos principales del dibujo.</p>
 
-                Describirá los elementos principales del dibujo.<br><br>
+        <p>Propondrá tres posibles usos.</p>
 
-                Propondrá tres posibles usos.<br><br>
-
-                Generará una idea creativa relacionada con el objeto.
-
-            </div>
+        <p>Generará una idea creativa relacionada con el objeto.</p>
 
         </div>
         """,
@@ -345,7 +248,7 @@ with col2:
 
 
 # =========================================================
-# FUNCIÓN BASE64
+# CONVERTIR IMAGEN A BASE64
 # =========================================================
 
 def encode_image_to_base64(image_path):
@@ -358,7 +261,7 @@ def encode_image_to_base64(image_path):
 
 
 # =========================================================
-# ANÁLISIS DEL DIBUJO
+# ANALIZAR
 # =========================================================
 
 if analizar:
@@ -387,24 +290,24 @@ if analizar:
                 # Convertir canvas en imagen
                 # -----------------------------------------
 
-                input_numpy_array = np.array(
+                image_array = np.array(
                     canvas_result.image_data
                 )
 
-                input_image = Image.fromarray(
-                    input_numpy_array.astype("uint8"),
+                image = Image.fromarray(
+                    image_array.astype("uint8"),
                     "RGBA"
                 )
 
-                image_path = "boceto_usuario.png"
+                image_path = "boceto.png"
 
-                input_image.save(
+                image.save(
                     image_path
                 )
 
 
                 # -----------------------------------------
-                # Convertir imagen a Base64
+                # Base64
                 # -----------------------------------------
 
                 base64_image = encode_image_to_base64(
@@ -413,7 +316,7 @@ if analizar:
 
 
                 # -----------------------------------------
-                # Cliente OpenAI
+                # OpenAI
                 # -----------------------------------------
 
                 client = OpenAI(
@@ -421,42 +324,32 @@ if analizar:
                 )
 
 
-                # -----------------------------------------
-                # Prompt
-                # -----------------------------------------
-
                 prompt = """
-                Analiza el boceto realizado por el usuario.
+                Analiza el dibujo realizado por el usuario.
 
-                El dibujo puede ser sencillo, incompleto
-                o poco preciso.
+                El dibujo puede ser sencillo o estar hecho a mano.
 
                 Responde en español utilizando esta estructura:
 
                 OBJETO IDENTIFICADO:
-                ¿Qué objeto crees que representa?
+                Indica qué objeto representa probablemente.
 
                 SEGURIDAD:
                 Indica Bajo, Medio o Alto.
 
                 DESCRIPCIÓN:
-                Describe brevemente los elementos visibles.
+                Describe brevemente lo que observas.
 
                 POSIBLES USOS:
-                Propón 3 posibles usos para ese objeto.
+                Propón 3 posibles usos.
 
                 IDEA CREATIVA:
-                Propón una idea interesante para transformar,
-                mejorar o utilizar ese objeto.
+                Propón una idea interesante relacionada con el objeto.
 
-                Si el dibujo es demasiado ambiguo,
-                indícalo claramente.
+                Si el dibujo no permite identificar claramente
+                el objeto, dilo.
                 """
 
-
-                # -----------------------------------------
-                # Solicitud
-                # -----------------------------------------
 
                 response = client.chat.completions.create(
 
@@ -478,10 +371,8 @@ if analizar:
                                     "type": "image_url",
 
                                     "image_url": {
-
                                         "url":
                                         f"data:image/png;base64,{base64_image}"
-
                                     }
 
                                 }
@@ -497,14 +388,14 @@ if analizar:
                 )
 
 
-                # -----------------------------------------
-                # Resultado
-                # -----------------------------------------
-
                 resultado = response.choices[
                     0
                 ].message.content
 
+
+                # -----------------------------------------
+                # RESULTADO
+                # -----------------------------------------
 
                 st.markdown(
                     '<div class="resultado">',
@@ -515,7 +406,7 @@ if analizar:
                     "Resultado del análisis"
                 )
 
-                st.markdown(
+                st.write(
                     resultado
                 )
 
@@ -533,7 +424,7 @@ if analizar:
 
 
 # =========================================================
-# PIE DE PÁGINA
+# PIE
 # =========================================================
 
 st.divider()

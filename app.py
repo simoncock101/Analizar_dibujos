@@ -25,12 +25,10 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-    /* Fondo general */
     .stApp {
         background-color: #f5f6f8;
     }
 
-    /* Título */
     .titulo {
         font-size: 40px;
         font-weight: 700;
@@ -41,16 +39,14 @@ st.markdown("""
     .subtitulo {
         font-size: 17px;
         color: #6b7280;
-        margin-top: 4px;
-        margin-bottom: 25px;
+        margin-top: 5px;
+        margin-bottom: 30px;
     }
 
-    /* Títulos de las secciones */
     .seccion {
         font-size: 22px;
         font-weight: 650;
         color: #202124;
-        margin-top: 10px;
         margin-bottom: 5px;
     }
 
@@ -60,28 +56,28 @@ st.markdown("""
         margin-bottom: 12px;
     }
 
-    /* Botón principal */
+    /* Contenedor del canvas */
+    div[data-testid="stCustomComponentV1"] {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* Botones */
     .stButton > button {
         width: 100%;
-        height: 48px;
+        height: 46px;
         border-radius: 10px;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
     }
 
-    /* Caja del resultado */
+    /* Resultado */
     .resultado {
         background-color: white;
         border-radius: 15px;
-        padding: 22px;
+        padding: 25px;
         border: 1px solid #e1e4e8;
         margin-top: 25px;
-    }
-
-    /* Línea separadora */
-    hr {
-        margin-top: 25px;
-        margin-bottom: 25px;
     }
 
 </style>
@@ -144,7 +140,7 @@ with st.sidebar:
 
 
 # =========================================================
-# COLUMNAS PRINCIPALES
+# COLUMNAS
 # =========================================================
 
 col1, col2 = st.columns(
@@ -181,13 +177,22 @@ with col1:
 
         background_color="#FFFFFF",
 
-        height=420,
+        height=350,
 
-        width=650,
+        width=600,
 
         drawing_mode="freedraw",
 
+        display_toolbar=False,
+
         key="boceto_canvas"
+    )
+
+    st.write("")
+
+    analizar = st.button(
+        "🔍 Interpretar boceto",
+        type="primary"
     )
 
 
@@ -204,7 +209,7 @@ with col2:
 
     st.markdown(
         '<div class="descripcion">'
-        'La IA analizará el dibujo y propondrá una interpretación.'
+        'La inteligencia artificial analizará tu dibujo.'
         '</div>',
         unsafe_allow_html=True
     )
@@ -217,16 +222,23 @@ with col2:
 
     st.write("")
 
-    analizar = st.button(
-        "🔍 Interpretar boceto",
-        type="primary"
+    st.info(
+        "Dibuja un objeto en el tablero y presiona "
+        "\"Interpretar boceto\"."
     )
 
     st.write("")
 
-    st.caption(
-        "La imagen se enviará al modelo de inteligencia artificial "
-        "para realizar el análisis."
+    st.markdown(
+        """
+        **La IA intentará:**
+
+        🔎 Identificar el objeto  
+        📊 Indicar su nivel de seguridad  
+        📝 Describir el dibujo  
+        💡 Proponer usos  
+        🚀 Generar una idea creativa
+        """
     )
 
 
@@ -283,7 +295,7 @@ if analizar:
 
                 input_image.save(image_path)
 
-                # Convertir a Base64
+                # Convertir imagen a Base64
                 base64_image = encode_image_to_base64(
                     image_path
                 )
@@ -293,11 +305,11 @@ if analizar:
                     api_key=api_key
                 )
 
-                # Instrucciones para la IA
                 prompt = """
                 Analiza el boceto realizado por el usuario.
 
-                El dibujo puede ser sencillo, incompleto o poco preciso.
+                El dibujo puede ser sencillo, incompleto
+                o poco preciso.
 
                 Responde en español utilizando esta estructura:
 
@@ -321,7 +333,6 @@ if analizar:
                 indícalo claramente.
                 """
 
-                # Solicitud a OpenAI
                 response = client.chat.completions.create(
 
                     model="gpt-4o-mini",
@@ -357,7 +368,6 @@ if analizar:
                     0
                 ].message.content
 
-                # Mostrar resultado
                 st.markdown(
                     '<div class="resultado">',
                     unsafe_allow_html=True

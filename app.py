@@ -176,7 +176,7 @@ with col1:
         height=350,
         width=650,
         drawing_mode="freedraw",
-        display_toolbar=False,
+        display_toolbar=True,
         key="canvas_boceto"
     )
 

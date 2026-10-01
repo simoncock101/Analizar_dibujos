@@ -1,5 +1,4 @@
 import base64
-import html
 import streamlit as st
 import numpy as np
 from PIL import Image
@@ -7,9 +6,9 @@ from openai import OpenAI
 from streamlit_drawable_canvas import st_canvas
 
 
-# ---------------------------------------------------------
+# =========================================================
 # CONFIGURACIÓN DE LA PÁGINA
-# ---------------------------------------------------------
+# =========================================================
 
 st.set_page_config(
     page_title="Boceto IA",
@@ -18,23 +17,26 @@ st.set_page_config(
 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # ESTILOS
-# ---------------------------------------------------------
+# =========================================================
 
 st.markdown("""
 <style>
 
+/* Fondo principal */
 .stApp {
     background-color: #ffffff;
 }
 
-/* Título principal */
+
+/* Título */
 .titulo {
     font-size: 40px;
     font-weight: 700;
     color: #202124 !important;
 }
+
 
 /* Subtítulo */
 .subtitulo {
@@ -43,6 +45,7 @@ st.markdown("""
     margin-bottom: 30px;
 }
 
+
 /* Títulos de sección */
 .seccion {
     font-size: 22px;
@@ -50,7 +53,8 @@ st.markdown("""
     color: #202124 !important;
 }
 
-/* Texto descriptivo */
+
+/* Descripciones */
 .descripcion {
     font-size: 14px;
     color: #6b7280 !important;
@@ -58,9 +62,9 @@ st.markdown("""
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    TARJETA DE INFORMACIÓN
-   --------------------------------------------------------- */
+   ========================================================= */
 
 .info {
     background-color: #f1f3f4;
@@ -82,9 +86,9 @@ st.markdown("""
 }
 
 
-/* ---------------------------------------------------------
-   RESULTADO
-   --------------------------------------------------------- */
+/* =========================================================
+   RESULTADO DEL ANÁLISIS
+   ========================================================= */
 
 .resultado {
     background-color: #f5f6f7;
@@ -94,27 +98,41 @@ st.markdown("""
     border: 1px solid #d9dce1;
 }
 
+
+/* Título del resultado */
 .resultado-titulo {
-    color: #202124 !important;
+    color: #000000 !important;
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 18px;
 }
 
+
+/* Texto del resultado */
 .texto-resultado {
-    color: #202124 !important;
-    font-size: 15px;
+    color: #000000 !important;
+    font-size: 16px;
     line-height: 1.7;
 }
 
+
+/* Todo el texto dentro del resultado */
+.texto-resultado p {
+    color: #000000 !important;
+}
+
 .texto-resultado strong {
-    color: #111827 !important;
+    color: #000000 !important;
+}
+
+.texto-resultado b {
+    color: #000000 !important;
 }
 
 
-/* ---------------------------------------------------------
-   ESTADO DE LA API KEY
-   --------------------------------------------------------- */
+/* =========================================================
+   ESTADO API KEY
+   ========================================================= */
 
 .estado-exito {
     background-color: #e8f5e9;
@@ -135,9 +153,9 @@ st.markdown("""
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    SIDEBAR
-   --------------------------------------------------------- */
+   ========================================================= */
 
 [data-testid="stSidebar"] {
     background-color: #252630;
@@ -148,9 +166,19 @@ st.markdown("""
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
+   API KEY
+   ========================================================= */
+
+div[data-testid="stTextInput"] label {
+    color: #202124 !important;
+    font-weight: 600;
+}
+
+
+/* =========================================================
    BOTÓN PRINCIPAL
-   --------------------------------------------------------- */
+   ========================================================= */
 
 div.stButton > button[kind="primary"] {
     background-color: #ff4b4b;
@@ -165,23 +193,13 @@ div.stButton > button[kind="primary"]:hover {
     background-color: #e63e3e;
 }
 
-
-/* ---------------------------------------------------------
-   INPUT DE API KEY
-   --------------------------------------------------------- */
-
-div[data-testid="stTextInput"] label {
-    color: #202124 !important;
-    font-weight: 600;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
 
-# ---------------------------------------------------------
+# =========================================================
 # SESSION STATE
-# ---------------------------------------------------------
+# =========================================================
 
 if "clave_valida" not in st.session_state:
     st.session_state["clave_valida"] = False
@@ -190,9 +208,9 @@ if "clave_validada" not in st.session_state:
     st.session_state["clave_validada"] = ""
 
 
-# ---------------------------------------------------------
+# =========================================================
 # TÍTULO
-# ---------------------------------------------------------
+# =========================================================
 
 st.markdown(
     '<div class="titulo">✏️ Boceto IA</div>',
@@ -207,9 +225,9 @@ st.markdown(
 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # SIDEBAR
-# ---------------------------------------------------------
+# =========================================================
 
 with st.sidebar:
 
@@ -221,6 +239,7 @@ with st.sidebar:
 
     st.divider()
 
+    # Tamaño del pincel
     stroke_width = st.slider(
         "Tamaño del pincel",
         1,
@@ -228,6 +247,7 @@ with st.sidebar:
         5
     )
 
+    # Color del dibujo
     stroke_color = st.color_picker(
         "Color del dibujo",
         "#222222"
@@ -245,9 +265,9 @@ with st.sidebar:
     st.write("Un objeto inventado")
 
 
-# ---------------------------------------------------------
+# =========================================================
 # COLUMNAS PRINCIPALES
-# ---------------------------------------------------------
+# =========================================================
 
 col1, col2 = st.columns(
     [1.1, 0.9],
@@ -275,7 +295,7 @@ with col1:
 
 
     # -----------------------------------------------------
-    # CANVAS
+    # TABLERO DE DIBUJO
     # -----------------------------------------------------
 
     canvas_result = st_canvas(
@@ -297,6 +317,7 @@ with col1:
         display_toolbar=True,
 
         key="canvas_boceto"
+
     )
 
 
@@ -344,8 +365,7 @@ with col2:
 
 
     # -----------------------------------------------------
-    # SI EL USUARIO CAMBIA LA CLAVE,
-    # VOLVEMOS A PEDIR VALIDACIÓN
+    # DETECTAR SI LA CLAVE CAMBIÓ
     # -----------------------------------------------------
 
     if api_key.strip() != st.session_state["clave_validada"]:
@@ -354,7 +374,7 @@ with col2:
 
 
     # -----------------------------------------------------
-    # BOTÓN VALIDAR
+    # BOTÓN VALIDAR CLAVE
     # -----------------------------------------------------
 
     validar = st.button(
@@ -380,10 +400,11 @@ with col2:
                     api_key=api_key.strip()
                 )
 
-                # Comprobamos que la API Key funcione
+                # Comprobar que la clave funciona
                 cliente_validacion.models.list()
 
 
+                # Guardar estado
                 st.session_state["clave_valida"] = True
 
                 st.session_state["clave_validada"] = api_key.strip()
@@ -419,7 +440,7 @@ with col2:
 
 
     # -----------------------------------------------------
-    # INFORMACIÓN
+    # INFORMACIÓN SOBRE LA IA
     # -----------------------------------------------------
 
     st.markdown(
@@ -444,9 +465,9 @@ with col2:
     )
 
 
-# ---------------------------------------------------------
-# FUNCIÓN PARA CONVERTIR IMAGEN A BASE64
-# ---------------------------------------------------------
+# =========================================================
+# FUNCIÓN PARA CONVERTIR LA IMAGEN A BASE64
+# =========================================================
 
 def encode_image_to_base64(image_path):
 
@@ -458,13 +479,13 @@ def encode_image_to_base64(image_path):
 
 
 # =========================================================
-# ANÁLISIS DEL BOCETO
+# ANALIZAR EL DIBUJO
 # =========================================================
 
 if analizar:
 
     # -----------------------------------------------------
-    # COMPROBAR API KEY
+    # COMPROBAR QUE EXISTE API KEY
     # -----------------------------------------------------
 
     if not api_key.strip():
@@ -473,6 +494,10 @@ if analizar:
             "Primero debes ingresar una API Key."
         )
 
+
+    # -----------------------------------------------------
+    # COMPROBAR QUE LA API KEY FUE VALIDADA
+    # -----------------------------------------------------
 
     elif not st.session_state.get(
         "clave_valida",
@@ -483,6 +508,10 @@ if analizar:
             "Primero debes validar la API Key."
         )
 
+
+    # -----------------------------------------------------
+    # REALIZAR ANÁLISIS
+    # -----------------------------------------------------
 
     else:
 
@@ -502,7 +531,7 @@ if analizar:
 
 
                 # -------------------------------------------------
-                # OBTENER IMAGEN DEL CANVAS
+                # OBTENER EL DIBUJO
                 # -------------------------------------------------
 
                 image_array = np.array(
@@ -516,8 +545,11 @@ if analizar:
                 )
 
 
-                image_path = "boceto.png"
+                # -------------------------------------------------
+                # GUARDAR IMAGEN
+                # -------------------------------------------------
 
+                image_path = "boceto.png"
 
                 image.save(
                     image_path
@@ -525,7 +557,7 @@ if analizar:
 
 
                 # -------------------------------------------------
-                # CONVERTIR IMAGEN A BASE64
+                # CONVERTIR A BASE64
                 # -------------------------------------------------
 
                 base64_image = encode_image_to_base64(
@@ -542,7 +574,7 @@ Analiza el dibujo realizado por el usuario.
 
 El dibujo puede ser simple, incompleto o estar hecho a mano.
 
-Responde en español siguiendo exactamente esta estructura:
+Responde en español utilizando esta estructura:
 
 OBJETO IDENTIFICADO:
 Indica qué objeto representa probablemente.
@@ -564,7 +596,7 @@ Si el dibujo no es claro, indícalo.
 
 
                 # -------------------------------------------------
-                # SOLICITAR ANÁLISIS
+                # ENVIAR IMAGEN A LA IA
                 # -------------------------------------------------
 
                 response = client.chat.completions.create(
@@ -593,13 +625,10 @@ Si el dibujo no es claro, indícalo.
                                         f"data:image/png;base64,{base64_image}"
 
                                     }
-
                                 }
 
                             ]
-
                         }
-
                     ],
 
                     max_tokens=500
@@ -607,28 +636,10 @@ Si el dibujo no es claro, indícalo.
 
 
                 # -------------------------------------------------
-                # OBTENER RESULTADO
+                # OBTENER RESPUESTA
                 # -------------------------------------------------
 
                 resultado = response.choices[0].message.content
-
-
-                # -------------------------------------------------
-                # PROTEGER EL TEXTO PARA HTML
-                # -------------------------------------------------
-
-                resultado_seguro = html.escape(
-                    resultado
-                )
-
-
-                resultado_seguro = (
-                    resultado_seguro
-                    .replace(
-                        "\n",
-                        "<br>"
-                    )
-                )
 
 
                 # -------------------------------------------------
@@ -636,16 +647,35 @@ Si el dibujo no es claro, indícalo.
                 # -------------------------------------------------
 
                 st.markdown(
-                    f"""
+                    """
                     <div class="resultado">
-
                         <div class="resultado-titulo">
                             Resultado del análisis
                         </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
-                        <div class="texto-resultado">
-                            {resultado_seguro}
-                        </div>
+
+                # -------------------------------------------------
+                # MOSTRAR TEXTO EN NEGRO
+                # -------------------------------------------------
+
+                st.markdown(
+                    f"""
+                    <div class="texto-resultado"
+                         style="
+                            background-color:#f5f6f7;
+                            color:#000000;
+                            padding:0px 22px 22px 22px;
+                            border-radius:0px 0px 12px 12px;
+                            border-left:1px solid #d9dce1;
+                            border-right:1px solid #d9dce1;
+                            border-bottom:1px solid #d9dce1;
+                         ">
+
+                        {resultado}
 
                     </div>
                     """,
@@ -664,9 +694,9 @@ Si el dibujo no es claro, indícalo.
                 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # PIE DE PÁGINA
-# ---------------------------------------------------------
+# =========================================================
 
 st.divider()
 

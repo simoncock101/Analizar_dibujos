@@ -25,57 +25,128 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+    /* ================================================
+       FONDO PRINCIPAL
+       ================================================ */
+
     .stApp {
-        background-color: #f5f6f8;
+        background-color: #ffffff;
     }
+
+
+    /* ================================================
+       TEXTOS PRINCIPALES
+       ================================================ */
 
     .titulo {
         font-size: 40px;
         font-weight: 700;
-        color: #202124;
+        color: #202124 !important;
         margin-bottom: 0px;
     }
 
     .subtitulo {
         font-size: 17px;
-        color: #6b7280;
+        color: #5f6368 !important;
         margin-top: 5px;
         margin-bottom: 30px;
     }
 
     .seccion {
         font-size: 22px;
-        font-weight: 650;
-        color: #202124;
+        font-weight: 700;
+        color: #202124 !important;
         margin-bottom: 5px;
     }
 
     .descripcion {
-        color: #6b7280;
         font-size: 14px;
+        color: #5f6368 !important;
         margin-bottom: 12px;
     }
 
-    .resultado {
-        background-color: white;
-        border-radius: 15px;
-        padding: 25px;
+
+    /* ================================================
+       PANEL DE INFORMACIÓN DE LA IA
+       ================================================ */
+
+    .panel-ia {
+        background-color: #f3f4f6;
         border: 1px solid #e1e4e8;
-        margin-top: 25px;
+        border-radius: 14px;
+        padding: 22px;
+        margin-top: 10px;
     }
 
+    .panel-ia-titulo {
+        font-size: 16px;
+        font-weight: 700;
+        color: #202124 !important;
+        margin-bottom: 15px;
+    }
+
+    .panel-ia-texto {
+        font-size: 14px;
+        color: #4b5563 !important;
+        line-height: 1.7;
+    }
+
+
+    /* ================================================
+       CANVAS
+       ================================================ */
+
+    div[data-testid="stCustomComponentV1"] {
+        background-color: #ffffff !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }
+
+
+    /* ================================================
+       BOTÓN
+       ================================================ */
+
     .stButton > button {
-        width: 100%;
-        height: 46px;
         border-radius: 10px;
+        height: 45px;
         font-size: 15px;
         font-weight: 600;
     }
 
-    /* Hace que el espacio exterior del componente sea blanco */
-    iframe {
-        background-color: white !important;
-        border-radius: 12px;
+
+    /* ================================================
+       RESULTADO
+       ================================================ */
+
+    .resultado {
+        background-color: #f3f4f6;
+        border: 1px solid #e1e4e8;
+        border-radius: 14px;
+        padding: 25px;
+        margin-top: 25px;
+        color: #202124 !important;
+    }
+
+
+    /* ================================================
+       TEXTOS DE STREAMLIT
+       ================================================ */
+
+    .stMarkdown,
+    .stText,
+    p,
+    label {
+        color: #202124;
+    }
+
+
+    /* ================================================
+       INPUT DE API
+       ================================================ */
+
+    div[data-baseweb="input"] {
+        background-color: #ffffff !important;
     }
 
 </style>
@@ -115,9 +186,9 @@ with st.sidebar:
 
     stroke_width = st.slider(
         "Tamaño del pincel",
-        1,
-        20,
-        5
+        min_value=1,
+        max_value=20,
+        value=5
     )
 
     stroke_color = st.color_picker(
@@ -127,14 +198,14 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("💡 Ideas para dibujar")
+    st.subheader("Ideas para dibujar")
 
-    st.write("🏠 Una casa")
-    st.write("📱 Un celular")
-    st.write("🚗 Un carro")
-    st.write("🪑 Una silla")
-    st.write("🐶 Un animal")
-    st.write("🚀 Un objeto inventado")
+    st.write("Una casa")
+    st.write("Un celular")
+    st.write("Un carro")
+    st.write("Una silla")
+    st.write("Un animal")
+    st.write("Un objeto inventado")
 
 
 # =========================================================
@@ -142,13 +213,13 @@ with st.sidebar:
 # =========================================================
 
 col1, col2 = st.columns(
-    [1.2, 0.8],
+    [1.15, 0.85],
     gap="large"
 )
 
 
 # =========================================================
-# TABLERO
+# COLUMNA IZQUIERDA
 # =========================================================
 
 with col1:
@@ -165,6 +236,11 @@ with col1:
         unsafe_allow_html=True
     )
 
+
+    # -----------------------------------------------------
+    # CANVAS
+    # -----------------------------------------------------
+
     canvas_result = st_canvas(
 
         fill_color="rgba(255, 255, 255, 0)",
@@ -175,18 +251,27 @@ with col1:
 
         background_color="#FFFFFF",
 
-        height=400,
+        # IMPORTANTE:
+        # Este tamaño ahora cabe dentro de la columna.
+        height=350,
 
-        width=650,
+        width=560,
 
         drawing_mode="freedraw",
 
         display_toolbar=True,
 
         key="boceto_canvas"
+
     )
 
+
     st.write("")
+
+
+    # -----------------------------------------------------
+    # BOTÓN
+    # -----------------------------------------------------
 
     analizar = st.button(
         "🔍 Interpretar boceto",
@@ -195,22 +280,27 @@ with col1:
 
 
 # =========================================================
-# PANEL DE IA
+# COLUMNA DERECHA
 # =========================================================
 
 with col2:
 
     st.markdown(
-        '<div class="seccion">🤖 Análisis con IA</div>',
+        '<div class="seccion">Análisis con IA</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
         '<div class="descripcion">'
-        'La inteligencia artificial analizará tu dibujo.'
+        'La inteligencia artificial analizará el dibujo.'
         '</div>',
         unsafe_allow_html=True
     )
+
+
+    # -----------------------------------------------------
+    # API KEY
+    # -----------------------------------------------------
 
     api_key = st.text_input(
         "API Key",
@@ -218,29 +308,39 @@ with col2:
         placeholder="sk-..."
     )
 
-    st.write("")
-
-    st.info(
-        "Dibuja un objeto en el tablero y presiona "
-        "\"Interpretar boceto\"."
-    )
 
     st.write("")
+
+
+    # -----------------------------------------------------
+    # TARJETA INFORMATIVA
+    # -----------------------------------------------------
 
     st.markdown(
         """
-        **La IA intentará:**
+        <div class="panel-ia">
 
-        🔎 Identificar el objeto
+            <div class="panel-ia-titulo">
+                ¿Qué hará la inteligencia artificial?
+            </div>
 
-        📊 Indicar su nivel de seguridad
+            <div class="panel-ia-texto">
 
-        📝 Describir el dibujo
+                Identificará el objeto que dibujaste.<br><br>
 
-        💡 Proponer usos
+                Indicará qué tan segura es su interpretación.<br><br>
 
-        🚀 Generar una idea creativa
-        """
+                Describirá los elementos principales del dibujo.<br><br>
+
+                Propondrá tres posibles usos.<br><br>
+
+                Generará una idea creativa relacionada con el objeto.
+
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
@@ -258,7 +358,7 @@ def encode_image_to_base64(image_path):
 
 
 # =========================================================
-# ANÁLISIS
+# ANÁLISIS DEL DIBUJO
 # =========================================================
 
 if analizar:
@@ -266,22 +366,26 @@ if analizar:
     if not api_key:
 
         st.warning(
-            "⚠️ Primero debes ingresar tu API Key."
+            "Primero debes ingresar tu API Key."
         )
 
     elif canvas_result.image_data is None:
 
         st.warning(
-            "⚠️ Primero realiza un dibujo en el tablero."
+            "Primero realiza un dibujo en el tablero."
         )
 
     else:
 
         with st.spinner(
-            "🤖 La inteligencia artificial está interpretando tu dibujo..."
+            "La inteligencia artificial está interpretando tu dibujo..."
         ):
 
             try:
+
+                # -----------------------------------------
+                # Convertir canvas en imagen
+                # -----------------------------------------
 
                 input_numpy_array = np.array(
                     canvas_result.image_data
@@ -294,15 +398,32 @@ if analizar:
 
                 image_path = "boceto_usuario.png"
 
-                input_image.save(image_path)
+                input_image.save(
+                    image_path
+                )
+
+
+                # -----------------------------------------
+                # Convertir imagen a Base64
+                # -----------------------------------------
 
                 base64_image = encode_image_to_base64(
                     image_path
                 )
 
+
+                # -----------------------------------------
+                # Cliente OpenAI
+                # -----------------------------------------
+
                 client = OpenAI(
                     api_key=api_key
                 )
+
+
+                # -----------------------------------------
+                # Prompt
+                # -----------------------------------------
 
                 prompt = """
                 Analiza el boceto realizado por el usuario.
@@ -332,11 +453,17 @@ if analizar:
                 indícalo claramente.
                 """
 
+
+                # -----------------------------------------
+                # Solicitud
+                # -----------------------------------------
+
                 response = client.chat.completions.create(
 
                     model="gpt-4o-mini",
 
                     messages=[
+
                         {
                             "role": "user",
 
@@ -351,40 +478,57 @@ if analizar:
                                     "type": "image_url",
 
                                     "image_url": {
+
                                         "url":
                                         f"data:image/png;base64,{base64_image}"
+
                                     }
+
                                 }
 
                             ]
+
                         }
+
                     ],
 
                     max_tokens=500
+
                 )
+
+
+                # -----------------------------------------
+                # Resultado
+                # -----------------------------------------
 
                 resultado = response.choices[
                     0
                 ].message.content
+
 
                 st.markdown(
                     '<div class="resultado">',
                     unsafe_allow_html=True
                 )
 
-                st.subheader("✨ Resultado")
+                st.subheader(
+                    "Resultado del análisis"
+                )
 
-                st.markdown(resultado)
+                st.markdown(
+                    resultado
+                )
 
                 st.markdown(
                     "</div>",
                     unsafe_allow_html=True
                 )
 
+
             except Exception as e:
 
                 st.error(
-                    f"❌ Ocurrió un error: {e}"
+                    f"Ocurrió un error: {e}"
                 )
 
 

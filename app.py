@@ -7,7 +7,7 @@ from streamlit_drawable_canvas import st_canvas
 
 
 # =========================================================
-# CONFIGURACIÓN
+# CONFIGURACION
 # =========================================================
 
 st.set_page_config(
@@ -167,7 +167,6 @@ with col1:
         unsafe_allow_html=True
     )
 
-    # Tablero de dibujo
     canvas_result = st_canvas(
         fill_color="rgba(255, 255, 255, 0)",
         stroke_width=stroke_width,
@@ -212,7 +211,6 @@ with col2:
         placeholder="sk-..."
     )
 
-    # Información sobre la función
     st.markdown(
         """
         <div class="info">
@@ -236,7 +234,7 @@ with col2:
 
 
 # =========================================================
-# FUNCIÓN PARA CONVERTIR IMAGEN A BASE64
+# FUNCION BASE64
 # =========================================================
 
 def encode_image_to_base64(image_path):
@@ -269,13 +267,13 @@ if analizar:
     else:
 
         with st.spinner(
-            "La inteligencia artificial está interpretando tu dibujo..."
+            "La inteligencia artificial esta interpretando tu dibujo..."
         ):
 
             try:
 
                 # -----------------------------------------
-                # Convertir el canvas en imagen
+                # Convertir canvas en imagen
                 # -----------------------------------------
 
                 image_array = np.array(
@@ -304,7 +302,7 @@ if analizar:
 
 
                 # -----------------------------------------
-                # Crear cliente OpenAI
+                # Crear cliente
                 # -----------------------------------------
 
                 client = OpenAI(
@@ -313,38 +311,41 @@ if analizar:
 
 
                 # -----------------------------------------
-                # Instrucciones para la IA
+                # PROMPT
+                #
+                # IMPORTANTE:
+                # Este texto no contiene tildes ni caracteres
+                # especiales para evitar el error ASCII.
                 # -----------------------------------------
 
                 prompt = """
-                Analiza el dibujo realizado por el usuario.
+Analyze the drawing made by the user.
 
-                El dibujo puede ser sencillo o estar hecho a mano.
+The drawing can be simple, incomplete, or hand drawn.
 
-                Responde en español utilizando esta estructura:
+Answer in Spanish using this structure:
 
-                OBJETO IDENTIFICADO:
-                Indica qué objeto representa probablemente.
+OBJETO IDENTIFICADO:
+Indica que objeto representa probablemente.
 
-                SEGURIDAD:
-                Indica Bajo, Medio o Alto.
+SEGURIDAD:
+Indica Bajo, Medio o Alto.
 
-                DESCRIPCIÓN:
-                Describe brevemente lo que observas.
+DESCRIPCION:
+Describe brevemente lo que observas.
 
-                POSIBLES USOS:
-                Propón 3 posibles usos.
+POSIBLES USOS:
+Propone 3 posibles usos para el objeto.
 
-                IDEA CREATIVA:
-                Propón una idea interesante relacionada con el objeto.
+IDEA CREATIVA:
+Propone una idea interesante relacionada con el objeto.
 
-                Si el dibujo no permite identificar claramente
-                el objeto, dilo.
-                """
+If the drawing is unclear, say so.
+"""
 
 
                 # -----------------------------------------
-                # Solicitud a OpenAI
+                # SOLICITUD A OPENAI
                 # -----------------------------------------
 
                 response = client.chat.completions.create(
@@ -370,6 +371,7 @@ if analizar:
                                         "url":
                                         f"data:image/png;base64,{base64_image}"
                                     }
+
                                 }
 
                             ]
@@ -384,7 +386,7 @@ if analizar:
 
 
                 # -----------------------------------------
-                # Obtener resultado
+                # OBTENER RESPUESTA
                 # -----------------------------------------
 
                 resultado = response.choices[
@@ -393,7 +395,7 @@ if analizar:
 
 
                 # -----------------------------------------
-                # Mostrar resultado
+                # MOSTRAR RESULTADO
                 # -----------------------------------------
 
                 st.markdown(
@@ -418,12 +420,12 @@ if analizar:
             except Exception as e:
 
                 st.error(
-                    f"Ocurrió un error: {e}"
+                    f"Ocurrió un error al analizar el dibujo: {e}"
                 )
 
 
 # =========================================================
-# PIE DE PÁGINA
+# PIE DE PAGINA
 # =========================================================
 
 st.divider()

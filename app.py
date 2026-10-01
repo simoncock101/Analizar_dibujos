@@ -56,13 +56,14 @@ st.markdown("""
         margin-bottom: 12px;
     }
 
-    /* Contenedor del canvas */
-    div[data-testid="stCustomComponentV1"] {
-        border-radius: 12px;
-        overflow: hidden;
+    .resultado {
+        background-color: white;
+        border-radius: 15px;
+        padding: 25px;
+        border: 1px solid #e1e4e8;
+        margin-top: 25px;
     }
 
-    /* Botones */
     .stButton > button {
         width: 100%;
         height: 46px;
@@ -71,13 +72,10 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* Resultado */
-    .resultado {
-        background-color: white;
-        border-radius: 15px;
-        padding: 25px;
-        border: 1px solid #e1e4e8;
-        margin-top: 25px;
+    /* Hace que el espacio exterior del componente sea blanco */
+    iframe {
+        background-color: white !important;
+        border-radius: 12px;
     }
 
 </style>
@@ -118,7 +116,7 @@ with st.sidebar:
     stroke_width = st.slider(
         "Tamaño del pincel",
         1,
-        30,
+        20,
         5
     )
 
@@ -131,12 +129,12 @@ with st.sidebar:
 
     st.subheader("💡 Ideas para dibujar")
 
-    st.write("• 🏠 Una casa")
-    st.write("• 📱 Un celular")
-    st.write("• 🚗 Un carro")
-    st.write("• 🪑 Una silla")
-    st.write("• 🐶 Un animal")
-    st.write("• 🚀 Un objeto inventado")
+    st.write("🏠 Una casa")
+    st.write("📱 Un celular")
+    st.write("🚗 Un carro")
+    st.write("🪑 Una silla")
+    st.write("🐶 Un animal")
+    st.write("🚀 Un objeto inventado")
 
 
 # =========================================================
@@ -144,7 +142,7 @@ with st.sidebar:
 # =========================================================
 
 col1, col2 = st.columns(
-    [1.25, 0.75],
+    [1.2, 0.8],
     gap="large"
 )
 
@@ -177,13 +175,13 @@ with col1:
 
         background_color="#FFFFFF",
 
-        height=350,
+        height=400,
 
-        width=600,
+        width=650,
 
         drawing_mode="freedraw",
 
-        display_toolbar=False,
+        display_toolbar=True,
 
         key="boceto_canvas"
     )
@@ -233,10 +231,14 @@ with col2:
         """
         **La IA intentará:**
 
-        🔎 Identificar el objeto  
-        📊 Indicar su nivel de seguridad  
-        📝 Describir el dibujo  
-        💡 Proponer usos  
+        🔎 Identificar el objeto
+
+        📊 Indicar su nivel de seguridad
+
+        📝 Describir el dibujo
+
+        💡 Proponer usos
+
         🚀 Generar una idea creativa
         """
     )
@@ -281,7 +283,6 @@ if analizar:
 
             try:
 
-                # Convertir canvas a imagen
                 input_numpy_array = np.array(
                     canvas_result.image_data
                 )
@@ -295,12 +296,10 @@ if analizar:
 
                 input_image.save(image_path)
 
-                # Convertir imagen a Base64
                 base64_image = encode_image_to_base64(
                     image_path
                 )
 
-                # Crear cliente
                 client = OpenAI(
                     api_key=api_key
                 )

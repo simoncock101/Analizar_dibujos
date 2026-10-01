@@ -1,4 +1,5 @@
 import base64
+import html
 import streamlit as st
 import numpy as np
 from PIL import Image
@@ -6,9 +7,9 @@ from openai import OpenAI
 from streamlit_drawable_canvas import st_canvas
 
 
-# =========================================================
-# CONFIGURACIÓN
-# =========================================================
+# ---------------------------------------------------------
+# CONFIGURACIÓN DE LA PÁGINA
+# ---------------------------------------------------------
 
 st.set_page_config(
     page_title="Boceto IA",
@@ -17,9 +18,9 @@ st.set_page_config(
 )
 
 
-# =========================================================
-# ESTILO
-# =========================================================
+# ---------------------------------------------------------
+# ESTILOS
+# ---------------------------------------------------------
 
 st.markdown("""
 <style>
@@ -28,81 +29,170 @@ st.markdown("""
     background-color: #ffffff;
 }
 
+/* Título principal */
 .titulo {
     font-size: 40px;
     font-weight: 700;
-    color: #202124;
+    color: #202124 !important;
 }
 
+/* Subtítulo */
 .subtitulo {
     font-size: 17px;
-    color: #6b7280;
+    color: #6b7280 !important;
     margin-bottom: 30px;
 }
 
+/* Títulos de sección */
 .seccion {
     font-size: 22px;
     font-weight: 700;
-    color: #202124;
+    color: #202124 !important;
 }
 
+/* Texto descriptivo */
 .descripcion {
     font-size: 14px;
-    color: #6b7280;
+    color: #6b7280 !important;
     margin-bottom: 12px;
 }
+
+
+/* ---------------------------------------------------------
+   TARJETA DE INFORMACIÓN
+   --------------------------------------------------------- */
 
 .info {
     background-color: #f1f3f4;
     border-radius: 12px;
     padding: 20px;
-    color: #202124;
+    color: #202124 !important;
     margin-top: 15px;
     border: 1px solid #e0e0e0;
 }
 
 .info h4 {
-    color: #202124;
+    color: #202124 !important;
     margin-top: 0;
 }
 
 .info p {
-    color: #4b5563;
+    color: #4b5563 !important;
     margin: 8px 0;
 }
 
+
+/* ---------------------------------------------------------
+   RESULTADO
+   --------------------------------------------------------- */
+
 .resultado {
-    background-color: #f1f3f4;
+    background-color: #f5f6f7;
     border-radius: 12px;
-    padding: 20px;
+    padding: 22px;
     margin-top: 25px;
-    color: #202124;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #d9dce1;
 }
 
-.exito {
+.resultado-titulo {
+    color: #202124 !important;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.texto-resultado {
+    color: #202124 !important;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.texto-resultado strong {
+    color: #111827 !important;
+}
+
+
+/* ---------------------------------------------------------
+   ESTADO DE LA API KEY
+   --------------------------------------------------------- */
+
+.estado-exito {
     background-color: #e8f5e9;
-    color: #1b5e20;
-    padding: 12px;
+    color: #1b5e20 !important;
+    padding: 10px 14px;
     border-radius: 8px;
     margin-top: 10px;
+    border: 1px solid #c8e6c9;
 }
 
-.error-clave {
+.estado-error {
     background-color: #ffebee;
-    color: #b71c1c;
-    padding: 12px;
+    color: #b71c1c !important;
+    padding: 10px 14px;
     border-radius: 8px;
     margin-top: 10px;
+    border: 1px solid #ffcdd2;
+}
+
+
+/* ---------------------------------------------------------
+   SIDEBAR
+   --------------------------------------------------------- */
+
+[data-testid="stSidebar"] {
+    background-color: #252630;
+}
+
+[data-testid="stSidebar"] * {
+    color: #ffffff !important;
+}
+
+
+/* ---------------------------------------------------------
+   BOTÓN PRINCIPAL
+   --------------------------------------------------------- */
+
+div.stButton > button[kind="primary"] {
+    background-color: #ff4b4b;
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 18px;
+}
+
+div.stButton > button[kind="primary"]:hover {
+    background-color: #e63e3e;
+}
+
+
+/* ---------------------------------------------------------
+   INPUT DE API KEY
+   --------------------------------------------------------- */
+
+div[data-testid="stTextInput"] label {
+    color: #202124 !important;
+    font-weight: 600;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 
-# =========================================================
-# ENCABEZADO
-# =========================================================
+# ---------------------------------------------------------
+# SESSION STATE
+# ---------------------------------------------------------
+
+if "clave_valida" not in st.session_state:
+    st.session_state["clave_valida"] = False
+
+if "clave_validada" not in st.session_state:
+    st.session_state["clave_validada"] = ""
+
+
+# ---------------------------------------------------------
+# TÍTULO
+# ---------------------------------------------------------
 
 st.markdown(
     '<div class="titulo">✏️ Boceto IA</div>',
@@ -117,9 +207,9 @@ st.markdown(
 )
 
 
-# =========================================================
+# ---------------------------------------------------------
 # SIDEBAR
-# =========================================================
+# ---------------------------------------------------------
 
 with st.sidebar:
 
@@ -155,9 +245,9 @@ with st.sidebar:
     st.write("Un objeto inventado")
 
 
-# =========================================================
-# COLUMNAS
-# =========================================================
+# ---------------------------------------------------------
+# COLUMNAS PRINCIPALES
+# ---------------------------------------------------------
 
 col1, col2 = st.columns(
     [1.1, 0.9],
@@ -166,7 +256,7 @@ col1, col2 = st.columns(
 
 
 # =========================================================
-# TABLERO
+# COLUMNA IZQUIERDA
 # =========================================================
 
 with col1:
@@ -183,19 +273,39 @@ with col1:
         unsafe_allow_html=True
     )
 
+
+    # -----------------------------------------------------
+    # CANVAS
+    # -----------------------------------------------------
+
     canvas_result = st_canvas(
+
         fill_color="rgba(255, 255, 255, 0)",
+
         stroke_width=stroke_width,
+
         stroke_color=stroke_color,
+
         background_color="#FFFFFF",
+
         height=350,
+
         width=650,
+
         drawing_mode="freedraw",
+
         display_toolbar=True,
+
         key="canvas_boceto"
     )
 
+
     st.write("")
+
+
+    # -----------------------------------------------------
+    # BOTÓN INTERPRETAR
+    # -----------------------------------------------------
 
     analizar = st.button(
         "🔍 Interpretar boceto",
@@ -204,7 +314,7 @@ with col1:
 
 
 # =========================================================
-# PANEL DERECHO
+# COLUMNA DERECHA
 # =========================================================
 
 with col2:
@@ -221,6 +331,7 @@ with col2:
         unsafe_allow_html=True
     )
 
+
     # -----------------------------------------------------
     # API KEY
     # -----------------------------------------------------
@@ -231,6 +342,17 @@ with col2:
         placeholder="sk-..."
     )
 
+
+    # -----------------------------------------------------
+    # SI EL USUARIO CAMBIA LA CLAVE,
+    # VOLVEMOS A PEDIR VALIDACIÓN
+    # -----------------------------------------------------
+
+    if api_key.strip() != st.session_state["clave_validada"]:
+
+        st.session_state["clave_valida"] = False
+
+
     # -----------------------------------------------------
     # BOTÓN VALIDAR
     # -----------------------------------------------------
@@ -239,45 +361,61 @@ with col2:
         "✓ Validar clave"
     )
 
+
     if validar:
 
         if not api_key.strip():
+
+            st.session_state["clave_valida"] = False
 
             st.error(
                 "Primero ingresa una API Key."
             )
 
-            st.session_state["clave_valida"] = False
-
         else:
 
             try:
 
-                # Crear cliente con la clave ingresada
                 cliente_validacion = OpenAI(
                     api_key=api_key.strip()
                 )
 
-                # Petición sencilla para comprobar autenticación
+                # Comprobamos que la API Key funcione
                 cliente_validacion.models.list()
+
 
                 st.session_state["clave_valida"] = True
 
-                st.success(
-                    "✓ La API Key es válida."
+                st.session_state["clave_validada"] = api_key.strip()
+
+
+                st.markdown(
+                    """
+                    <div class="estado-exito">
+                        ✓ La API Key es válida y está lista para utilizarse.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
+
 
             except Exception as e:
 
                 st.session_state["clave_valida"] = False
 
-                st.error(
-                    "✗ La API Key no es válida."
+                st.session_state["clave_validada"] = ""
+
+
+                st.markdown(
+                    """
+                    <div class="estado-error">
+                        ✗ La API Key no es válida o no está disponible.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
 
-                st.caption(
-                    str(e)
-                )
+                st.caption(str(e))
 
 
     # -----------------------------------------------------
@@ -306,9 +444,9 @@ with col2:
     )
 
 
-# =========================================================
-# FUNCIÓN BASE64
-# =========================================================
+# ---------------------------------------------------------
+# FUNCIÓN PARA CONVERTIR IMAGEN A BASE64
+# ---------------------------------------------------------
 
 def encode_image_to_base64(image_path):
 
@@ -320,96 +458,114 @@ def encode_image_to_base64(image_path):
 
 
 # =========================================================
-# ANALIZAR DIBUJO
+# ANÁLISIS DEL BOCETO
 # =========================================================
 
 if analizar:
 
-    if not api_key:
+    # -----------------------------------------------------
+    # COMPROBAR API KEY
+    # -----------------------------------------------------
+
+    if not api_key.strip():
 
         st.warning(
-            "Primero debes ingresar tu API Key."
+            "Primero debes ingresar una API Key."
         )
+
+
+    elif not st.session_state.get(
+        "clave_valida",
+        False
+    ):
+
+        st.warning(
+            "Primero debes validar la API Key."
+        )
+
 
     else:
 
         with st.spinner(
-            "La inteligencia artificial esta interpretando tu dibujo..."
+            "La inteligencia artificial está interpretando tu dibujo..."
         ):
 
             try:
 
-                # -----------------------------------------
-                # Crear cliente
-                # -----------------------------------------
+                # -------------------------------------------------
+                # CONECTAR CON OPENAI
+                # -------------------------------------------------
 
                 client = OpenAI(
                     api_key=api_key.strip()
                 )
 
 
-                # -----------------------------------------
-                # Convertir canvas en imagen
-                # -----------------------------------------
+                # -------------------------------------------------
+                # OBTENER IMAGEN DEL CANVAS
+                # -------------------------------------------------
 
                 image_array = np.array(
                     canvas_result.image_data
                 )
+
 
                 image = Image.fromarray(
                     image_array.astype("uint8"),
                     "RGBA"
                 )
 
+
                 image_path = "boceto.png"
+
 
                 image.save(
                     image_path
                 )
 
 
-                # -----------------------------------------
-                # Convertir imagen a Base64
-                # -----------------------------------------
+                # -------------------------------------------------
+                # CONVERTIR IMAGEN A BASE64
+                # -------------------------------------------------
 
                 base64_image = encode_image_to_base64(
                     image_path
                 )
 
 
-                # -----------------------------------------
-                # Prompt
-                # -----------------------------------------
+                # -------------------------------------------------
+                # PROMPT
+                # -------------------------------------------------
 
                 prompt = """
-Analyze the drawing made by the user.
+Analiza el dibujo realizado por el usuario.
 
-The drawing can be simple, incomplete, or hand drawn.
+El dibujo puede ser simple, incompleto o estar hecho a mano.
 
-Answer in Spanish using this structure:
+Responde en español siguiendo exactamente esta estructura:
 
 OBJETO IDENTIFICADO:
-Indica que objeto representa probablemente.
+Indica qué objeto representa probablemente.
 
 SEGURIDAD:
 Indica Bajo, Medio o Alto.
 
-DESCRIPCION:
-Describe brevemente lo que observas.
+DESCRIPCIÓN:
+Describe brevemente lo que observas en el dibujo.
 
 POSIBLES USOS:
-Propone 3 posibles usos para el objeto.
+Propón 3 posibles usos para el objeto.
 
 IDEA CREATIVA:
-Propone una idea interesante relacionada con el objeto.
+Propón una idea interesante relacionada con el objeto.
 
-If the drawing is unclear, say so.
+Si el dibujo no es claro, indícalo.
 """
 
 
-                # -----------------------------------------
-                # Solicitud a OpenAI
-                # -----------------------------------------
+                # -------------------------------------------------
+                # SOLICITAR ANÁLISIS
+                # -------------------------------------------------
 
                 response = client.chat.completions.create(
 
@@ -424,6 +580,7 @@ If the drawing is unclear, say so.
 
                                 {
                                     "type": "text",
+
                                     "text": prompt
                                 },
 
@@ -431,9 +588,12 @@ If the drawing is unclear, say so.
                                     "type": "image_url",
 
                                     "image_url": {
+
                                         "url":
                                         f"data:image/png;base64,{base64_image}"
+
                                     }
+
                                 }
 
                             ]
@@ -443,41 +603,59 @@ If the drawing is unclear, say so.
                     ],
 
                     max_tokens=500
-
                 )
 
 
-                # -----------------------------------------
-                # Obtener respuesta
-                # -----------------------------------------
+                # -------------------------------------------------
+                # OBTENER RESULTADO
+                # -------------------------------------------------
 
-                resultado = response.choices[
-                    0
-                ].message.content
+                resultado = response.choices[0].message.content
 
 
-                # -----------------------------------------
-                # Mostrar resultado
-                # -----------------------------------------
+                # -------------------------------------------------
+                # PROTEGER EL TEXTO PARA HTML
+                # -------------------------------------------------
 
-                st.markdown(
-                    '<div class="resultado">',
-                    unsafe_allow_html=True
-                )
-
-                st.subheader(
-                    "Resultado del análisis"
-                )
-
-                st.write(
+                resultado_seguro = html.escape(
                     resultado
                 )
 
+
+                resultado_seguro = (
+                    resultado_seguro
+                    .replace(
+                        "\n",
+                        "<br>"
+                    )
+                )
+
+
+                # -------------------------------------------------
+                # MOSTRAR RESULTADO
+                # -------------------------------------------------
+
                 st.markdown(
-                    "</div>",
+                    f"""
+                    <div class="resultado">
+
+                        <div class="resultado-titulo">
+                            Resultado del análisis
+                        </div>
+
+                        <div class="texto-resultado">
+                            {resultado_seguro}
+                        </div>
+
+                    </div>
+                    """,
                     unsafe_allow_html=True
                 )
 
+
+            # -----------------------------------------------------
+            # MANEJO DE ERRORES
+            # -----------------------------------------------------
 
             except Exception as e:
 
@@ -486,9 +664,9 @@ If the drawing is unclear, say so.
                 )
 
 
-# =========================================================
+# ---------------------------------------------------------
 # PIE DE PÁGINA
-# =========================================================
+# ---------------------------------------------------------
 
 st.divider()
 
